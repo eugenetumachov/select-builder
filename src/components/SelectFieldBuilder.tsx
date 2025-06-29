@@ -3,30 +3,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle } from "lucide-react";
-import { SubmitButton } from "./components/SubmitButton";
+import { SubmitButton } from "./SubmitButton";
+import ChoicesList from "./ChoicesList";
 
 interface FormData {
   label: string;
   required: boolean;
-  defaultValue: string;
-  choices: string;
+  choices: string[];
+  default: string;
   order: string;
 }
 
 interface FormErrors {
   label?: string;
+  choices?: string;
 }
 
 export default function SelectFieldBuilder() {
-  const [formData, setFormData] = useState<FormData>({
+  const initialFormData = {
     label: "",
     required: false,
-    defaultValue: "",
-    choices: "",
+    choices: [],
+    default: "",
     order: "alphabetical",
-  });
+  };
+
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,17 +41,21 @@ export default function SelectFieldBuilder() {
       newErrors.label = "Label is required";
     }
 
+    if (formData.choices.length === 0) {
+      newErrors.choices = "Choices are required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (
     field: keyof FormData,
-    value: string | boolean
+    value: string | boolean | string[]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
@@ -62,27 +69,27 @@ export default function SelectFieldBuilder() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Submit the form data to API endpoint
+    await fetch("https://webhook.site/b1971fb0-dd60-4fa4-b88b-ee04271da2db", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
     console.log("Form submitted:", formData);
 
     setIsSubmitting(false);
   };
 
-  const handleCancel = () => {
-    setFormData({
-      label: "",
-      required: false,
-      defaultValue: "",
-      choices: "",
-      order: "alphabetical",
-    });
+  const handleClear = () => {
+    setFormData(initialFormData);
     setErrors({});
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="md:min-w-[640px]">
       <Card>
         <CardHeader className="p-3 bg-[#d9edf7] border-b rounded-t-lg">
           <CardTitle className="text-lg text-[#1f6d93]">
@@ -103,7 +110,7 @@ export default function SelectFieldBuilder() {
                   value={formData.label}
                   onChange={(e) => handleInputChange("label", e.target.value)}
                   className={errors.label ? "border-red-500" : ""}
-                  placeholder="Enter the label for the field"
+                  placeholder="Enter the label for the field..."
                 />
                 {errors.label && (
                   <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
@@ -137,40 +144,28 @@ export default function SelectFieldBuilder() {
               </div>
             </div>
 
-            {/* Default value */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label
-                htmlFor="defaultValue"
-                className="text-sm font-medium md:pt-2"
-              >
-                Default Value
-              </Label>
-              <div className="md:col-span-2">
-                <Input
-                  id="defaultValue"
-                  type="text"
-                  value={formData.defaultValue}
-                  onChange={(e) =>
-                    handleInputChange("defaultValue", e.target.value)
-                  }
-                  placeholder="Enter the default value for the field"
-                />
-              </div>
-            </div>
-
             {/* Choices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
               <Label htmlFor="choices" className="text-sm font-medium md:pt-2">
-                Choices
+                Choices <span className="text-red-500">*</span>
               </Label>
               <div className="md:col-span-2">
-                <Textarea
-                  id="choices"
-                  value={formData.choices}
-                  onChange={(e) => handleInputChange("choices", e.target.value)}
-                  placeholder="Enter the list of choices, one per line"
-                  className="min-h-[100px]"
+                <ChoicesList
+                  items={formData.choices}
+                  defaultItem={formData.default}
+                  onItemsChange={(choices: string[]) => {
+                    handleInputChange("choices", choices);
+                  }}
+                  onSetDefault={(def: string) => {
+                    handleInputChange("default", def);
+                  }}
                 />
+                {errors.choices && (
+                  <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.choices}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -228,16 +223,14 @@ export default function SelectFieldBuilder() {
                   label="Save changes"
                   isSubmitting={isSubmitting}
                 />
-                <span className="text-sm text-gray-500 hidden sm:inline">
-                  or
-                </span>
+
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleCancel}
+                  onClick={handleClear}
                   className="w-full sm:w-auto bg-transparent"
                 >
-                  Cancel
+                  Clear
                 </Button>
               </div>
             </div>

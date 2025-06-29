@@ -1,4 +1,4 @@
-import SelectFieldBuilder from "./SelectFieldBuilder";
+import SelectFieldBuilder from "./components/SelectFieldBuilder";
 
 function App() {
   return <SelectFieldBuilder />;
