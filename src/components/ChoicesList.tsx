@@ -8,8 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus } from "lucide-react";
 
-const MAX_ITEMS_NUMBER = 3;
-const MAX_ITEM_LENGTH = 40;
+export const MAX_ITEMS_NUMBER = 50;
+export const MAX_ITEM_LENGTH = 40;
 
 interface ChoicesListProps {
   items: string[];

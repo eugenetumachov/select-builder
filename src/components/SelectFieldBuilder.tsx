@@ -146,7 +146,7 @@ export default function SelectFieldBuilder() {
 
             {/* Choices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label htmlFor="choices" className="text-sm font-medium md:pt-2">
+              <Label htmlFor="new-item" className="text-sm font-medium md:pt-2">
                 Choices <span className="text-red-500">*</span>
               </Label>
               <div className="md:col-span-2">
