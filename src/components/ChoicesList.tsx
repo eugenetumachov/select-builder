@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const MAX_CHOICES_NUMBER = 3;
+export const MAX_CHOICES_NUMBER = 50;
 export const MAX_CHOICE_LENGTH = 40;
 
 interface ChoicesListProps {
