@@ -1,7 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import ChoicesList, { MAX_ITEM_LENGTH, MAX_ITEMS_NUMBER } from "./ChoicesList";
+import ChoicesList, {
+  MAX_CHOICE_LENGTH,
+  MAX_CHOICES_NUMBER,
+} from "./ChoicesList";
 import { useState } from "react";
 
 const mockOnItemsChange = vi.fn();
@@ -166,14 +169,14 @@ describe("ChoicesList", () => {
 
     it("prevents adding items longer than max allowed characters", async () => {
       const user = userEvent.setup();
-      const longItem = "a".repeat(MAX_ITEM_LENGTH + 1);
+      const longItem = "a".repeat(MAX_CHOICE_LENGTH + 1);
       renderChoicesList();
 
       await user.type(getInputField(), longItem);
       expect(getAddButton()).toBeDisabled();
       expect(
         screen.getByText(
-          `Item name too long (max ${MAX_ITEM_LENGTH} characters)`
+          `Item name too long (max ${MAX_CHOICE_LENGTH} characters)`
         )
       ).toBeInTheDocument();
 
@@ -194,7 +197,7 @@ describe("ChoicesList", () => {
 
     it("allows adding items exactly max allowed characters long", async () => {
       const user = userEvent.setup();
-      const exactLengthItem = "a".repeat(MAX_ITEM_LENGTH);
+      const exactLengthItem = "a".repeat(MAX_CHOICE_LENGTH);
       renderChoicesList();
 
       await user.type(getInputField(), exactLengthItem);
@@ -207,7 +210,7 @@ describe("ChoicesList", () => {
     it("prevents adding more than max allowed items", async () => {
       userEvent.setup();
       const items = Array.from(
-        { length: MAX_ITEMS_NUMBER },
+        { length: MAX_CHOICES_NUMBER },
         (_, i) => `Item ${i + 1}`
       );
       renderChoicesList({ items });

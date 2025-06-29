@@ -7,13 +7,15 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const MAX_ITEMS_NUMBER = 50;
-export const MAX_ITEM_LENGTH = 40;
+export const MAX_CHOICES_NUMBER = 3;
+export const MAX_CHOICE_LENGTH = 40;
 
 interface ChoicesListProps {
   items: string[];
   defaultItem: string;
+  hasError: boolean;
   onItemsChange: (items: string[]) => void;
   onSetDefault: (defaultItem: string) => void;
 }
@@ -21,6 +23,7 @@ interface ChoicesListProps {
 export default function ChoicesList({
   items,
   defaultItem,
+  hasError,
   onItemsChange,
   onSetDefault,
 }: ChoicesListProps) {
@@ -29,9 +32,9 @@ export default function ChoicesList({
   const handleAddItem = () => {
     if (
       newItem.trim() &&
-      newItem.trim().length <= MAX_ITEM_LENGTH &&
+      newItem.trim().length <= MAX_CHOICE_LENGTH &&
       !items.includes(newItem.trim()) &&
-      items.length < MAX_ITEMS_NUMBER
+      items.length < MAX_CHOICES_NUMBER
     ) {
       const trimmedItem = newItem.trim();
       onItemsChange([...items, trimmedItem]);
@@ -75,20 +78,20 @@ export default function ChoicesList({
               onChange={(e) => setNewItem(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={
-                items.length >= MAX_ITEMS_NUMBER
+                items.length >= MAX_CHOICES_NUMBER
                   ? "Maximum items reached"
                   : "Enter item name..."
               }
-              className="flex-1"
-              disabled={items.length >= MAX_ITEMS_NUMBER}
+              className={cn("flex-1", hasError && "border-red-500")}
+              disabled={items.length >= MAX_CHOICES_NUMBER}
             />
             {newItem && (
               <div className="absolute inset-0 pointer-events-none flex items-center px-3 text-sm">
                 <span className="bg-white">
-                  <span>{newItem.slice(0, MAX_ITEM_LENGTH)}</span>
-                  {newItem.length > MAX_ITEM_LENGTH && (
+                  <span>{newItem.slice(0, MAX_CHOICE_LENGTH)}</span>
+                  {newItem.length > MAX_CHOICE_LENGTH && (
                     <span className="text-destructive bg-destructive/10">
-                      {newItem.slice(MAX_ITEM_LENGTH)}
+                      {newItem.slice(MAX_CHOICE_LENGTH)}
                     </span>
                   )}
                 </span>
@@ -99,9 +102,9 @@ export default function ChoicesList({
             onClick={handleAddItem}
             disabled={
               !newItem.trim() ||
-              newItem.trim().length > MAX_ITEM_LENGTH ||
+              newItem.trim().length > MAX_CHOICE_LENGTH ||
               items.includes(newItem.trim()) ||
-              items.length >= MAX_ITEMS_NUMBER
+              items.length >= MAX_CHOICES_NUMBER
             }
             size="icon"
             variant="secondary"
@@ -111,14 +114,14 @@ export default function ChoicesList({
         </div>
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>
-            {newItem.trim().length > MAX_ITEM_LENGTH ? (
+            {newItem.trim().length > MAX_CHOICE_LENGTH ? (
               <span className="text-destructive">
-                Item name too long (max {MAX_ITEM_LENGTH} characters)
+                Item name too long (max {MAX_CHOICE_LENGTH} characters)
               </span>
             ) : items.includes(newItem.trim()) && newItem.trim() ? (
               <span className="text-destructive">Item already exists</span>
             ) : (
-              `Max ${MAX_ITEMS_NUMBER} items, ${MAX_ITEM_LENGTH} characters each`
+              `Max ${MAX_CHOICES_NUMBER} items, ${MAX_CHOICE_LENGTH} characters max`
             )}
           </span>
         </div>
@@ -149,6 +152,7 @@ export default function ChoicesList({
                     )}
                   </div>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveItem(item)}

@@ -153,6 +153,7 @@ export default function SelectFieldBuilder() {
                 <ChoicesList
                   items={formData.choices}
                   defaultItem={formData.default}
+                  hasError={!!errors.choices}
                   onItemsChange={(choices: string[]) => {
                     handleInputChange("choices", choices);
                   }}
