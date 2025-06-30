@@ -140,18 +140,19 @@ export default function SelectFieldBuilder() {
 
             {/* Action buttons */}
             <div className="flex justify-center pt-6">
-              <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
+              <div className="flex flex-col md:flex-row gap-3 items-center w-full md:w-auto">
                 <SubmitButton
-                  label="Save changes"
                   isSubmitting={isSubmitting}
-                  className="font-bold w-full sm:w-auto"
-                />
+                  className="font-bold w-full md:w-auto"
+                >
+                  Save changes
+                </SubmitButton>
 
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleClear}
-                  className="w-full sm:w-auto bg-transparent"
+                  className="w-full md:w-auto bg-transparent"
                 >
                   Clear
                 </Button>

@@ -19,10 +19,9 @@ export function AddChoiceForm({
   onAddItem,
 }: AddChoiceFormProps) {
   const [newChoice, setNewChoice] = useState("");
+  const trimmedChoice = newChoice.trim();
 
   const handleAddButtonClick = () => {
-    const trimmedChoice = newChoice.trim();
-
     if (
       trimmedChoice &&
       trimmedChoice.length <= MAX_CHOICE_LENGTH &&
@@ -77,9 +76,9 @@ export function AddChoiceForm({
         <Button
           onClick={handleAddButtonClick}
           disabled={
-            !newChoice.trim() ||
-            newChoice.trim().length > MAX_CHOICE_LENGTH ||
-            choices.includes(newChoice.trim()) ||
+            !trimmedChoice ||
+            trimmedChoice.length > MAX_CHOICE_LENGTH ||
+            choices.includes(trimmedChoice) ||
             choices.length >= MAX_CHOICES_NUMBER
           }
           size="icon"
@@ -91,11 +90,11 @@ export function AddChoiceForm({
 
       {/* Hint / error message */}
       <div className="text-xs text-muted-foreground">
-        {newChoice.trim().length > MAX_CHOICE_LENGTH ? (
+        {trimmedChoice.length > MAX_CHOICE_LENGTH ? (
           <span className="text-destructive">
             Name is too long (max {MAX_CHOICE_LENGTH} characters)
           </span>
-        ) : choices.includes(newChoice.trim()) && newChoice.trim() ? (
+        ) : trimmedChoice && choices.includes(trimmedChoice) ? (
           <span className="text-destructive">Item already exists</span>
         ) : (
           `Max ${MAX_CHOICES_NUMBER} items, ${MAX_CHOICE_LENGTH} characters per item`

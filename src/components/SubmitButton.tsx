@@ -1,21 +1,20 @@
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
-interface SubmitButtonProps {
-  label?: string;
-  isSubmitting: boolean;
-  className?: string;
+interface SubmitButtonProps extends ButtonProps {
+  isSubmitting?: boolean;
 }
 
 export function SubmitButton({
-  label = "Submit",
   isSubmitting,
-  className = "",
+  disabled,
+  children,
+  ...props
 }: SubmitButtonProps) {
   return (
-    <Button type="submit" disabled={isSubmitting} className={className}>
+    <Button type="submit" disabled={disabled || isSubmitting} {...props}>
       {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {label}
+      {children}
     </Button>
   );
 }
