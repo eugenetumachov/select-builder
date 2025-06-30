@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertCircle } from "lucide-react";
-import { SubmitButton } from "./SubmitButton";
-import ChoicesList from "./ChoicesList";
+import { SubmitButton } from "@/components/SubmitButton";
+import { OrderField } from "./selectFieldBuilder/fields/OrderField";
+import { ChoicesField } from "./selectFieldBuilder/fields/ChoicesField";
+import { RequiredField } from "./selectFieldBuilder/fields/RequiredField";
+import { LabelField } from "./selectFieldBuilder/fields/LabelField";
 
-interface FormData {
+export interface FormData {
   label: string;
   required: boolean;
   choices: string[];
   default: string;
-  order: string;
+  order: "alphabetical" | "user-specified";
 }
 
 interface FormErrors {
@@ -21,7 +21,7 @@ interface FormErrors {
 }
 
 export default function SelectFieldBuilder() {
-  const initialFormData = {
+  const initialFormData: FormData = {
     label: "",
     required: false,
     choices: [],
@@ -49,9 +49,9 @@ export default function SelectFieldBuilder() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (
-    field: keyof FormData,
-    value: string | boolean | string[]
+  const handleInputChange = <K extends keyof FormData>(
+    field: K,
+    value: FormData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
@@ -100,121 +100,42 @@ export default function SelectFieldBuilder() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Label */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label htmlFor="label" className="text-sm font-medium md:pt-2">
-                Label <span className="text-red-500">*</span>
-              </Label>
-              <div className="md:col-span-2">
-                <Input
-                  id="label"
-                  type="text"
-                  value={formData.label}
-                  onChange={(e) => handleInputChange("label", e.target.value)}
-                  className={errors.label ? "border-red-500" : ""}
-                  placeholder="Enter the label for the field..."
-                />
-                {errors.label && (
-                  <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                    <AlertCircle className="h-4 w-4" />
-                    {errors.label}
-                  </div>
-                )}
-              </div>
+              <LabelField
+                value={formData.label}
+                error={errors.label}
+                onChange={(value) => handleInputChange("label", value)}
+              />
             </div>
 
             {/* Required */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label className="text-sm font-medium md:pt-2">Type</Label>
-              <div className="md:col-span-2 py-2 flex items-center space-x-2">
-                <div className="mr-4 text-sm">Multi-select</div>
-                <input
-                  id="required"
-                  type="checkbox"
-                  checked={formData.required}
-                  onChange={(e) =>
-                    handleInputChange("required", e.target.checked)
-                  }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <Label
-                  htmlFor="required"
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  A value is required
-                </Label>
-              </div>
+              <RequiredField
+                value={formData.required}
+                onChange={(value) => handleInputChange("required", value)}
+              />
             </div>
 
             {/* Choices */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label htmlFor="new-item" className="text-sm font-medium md:pt-2">
-                Choices <span className="text-red-500">*</span>
-              </Label>
-              <div className="md:col-span-2">
-                <ChoicesList
-                  items={formData.choices}
-                  defaultItem={formData.default}
-                  hasError={!!errors.choices}
-                  onItemsChange={(choices: string[]) => {
-                    handleInputChange("choices", choices);
-                  }}
-                  onSetDefault={(def: string) => {
-                    handleInputChange("default", def);
-                  }}
-                />
-                {errors.choices && (
-                  <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                    <AlertCircle className="h-4 w-4" />
-                    {errors.choices}
-                  </div>
-                )}
-              </div>
+              <ChoicesField
+                choices={formData.choices}
+                default={formData.default}
+                error={errors.choices}
+                onChange={(choices) => handleInputChange("choices", choices)}
+                onDefaultChange={(defaultValue) =>
+                  handleInputChange("default", defaultValue)
+                }
+              />
             </div>
 
             {/* Order */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 items-start">
-              <Label className="text-sm font-medium md:pt-2">Order</Label>
-              <div className="md:col-span-2">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="order-alphabetical"
-                      type="radio"
-                      name="order"
-                      value="alphabetical"
-                      checked={formData.order === "alphabetical"}
-                      onChange={(e) =>
-                        handleInputChange("order", e.target.value)
-                      }
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <Label
-                      htmlFor="order-alphabetical"
-                      className="text-sm font-medium cursor-pointer"
-                    >
-                      Display choices in alphabetical order
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      id="order-user-specified"
-                      type="radio"
-                      name="order"
-                      value="user-specified"
-                      checked={formData.order === "user-specified"}
-                      onChange={(e) =>
-                        handleInputChange("order", e.target.value)
-                      }
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <Label
-                      htmlFor="order-user-specified"
-                      className="text-sm font-medium cursor-pointer"
-                    >
-                      Keep the custom order
-                    </Label>
-                  </div>
-                </div>
-              </div>
+              <OrderField
+                value={formData.order}
+                onChange={(value) =>
+                  handleInputChange("order", value as FormData["order"])
+                }
+              />
             </div>
 
             {/* Action buttons */}
@@ -223,6 +144,7 @@ export default function SelectFieldBuilder() {
                 <SubmitButton
                   label="Save changes"
                   isSubmitting={isSubmitting}
+                  className="font-bold w-full sm:w-auto"
                 />
 
                 <Button

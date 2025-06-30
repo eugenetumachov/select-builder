@@ -14,8 +14,9 @@ const mockOnSetDefault = vi.fn();
 
 const renderChoicesList = (props = {}) => {
   const defaultProps = {
-    items: [],
-    defaultItem: "",
+    choices: [],
+    defaultChoice: "",
+    hasError: false,
     onItemsChange: mockOnItemsChange,
     onSetDefault: mockOnSetDefault,
     ...props,
@@ -26,9 +27,9 @@ const renderChoicesList = (props = {}) => {
 
 const getInputField = () => {
   try {
-    return screen.getByPlaceholderText("Enter item name...");
+    return screen.getByPlaceholderText("Enter choice...");
   } catch {
-    return screen.getByPlaceholderText("Maximum items reached");
+    return screen.getByPlaceholderText("Maximum choices reached");
   }
 };
 
@@ -53,14 +54,15 @@ const getRadioButtonByLabel = (label: string) => {
 };
 
 function TestWrapper() {
-  const [items, setItems] = useState<string[]>([]);
-  const [defaultItem, setDefaultItem] = useState("");
+  const [choices, setChoices] = useState<string[]>([]);
+  const [defaultChoice, setDefaultChoice] = useState("");
   return (
     <ChoicesList
-      items={items}
-      defaultItem={defaultItem}
-      onItemsChange={setItems}
-      onSetDefault={setDefaultItem}
+      choices={choices}
+      defaultChoice={defaultChoice}
+      hasError={false}
+      onItemsChange={setChoices}
+      onSetDefault={setDefaultChoice}
     />
   );
 }
@@ -80,8 +82,8 @@ describe("ChoicesList", () => {
     });
 
     it("renders a non-empty list", () => {
-      const items = ["Item 1", "Item 2"];
-      renderChoicesList({ items, defaultItem: "Item 1" });
+      const choices = ["Item 1", "Item 2"];
+      renderChoicesList({ choices, defaultChoice: "Item 1" });
 
       expect(screen.getByText("Item 1")).toBeInTheDocument();
       expect(screen.getByText("Item 2")).toBeInTheDocument();
@@ -157,7 +159,7 @@ describe("ChoicesList", () => {
 
     it("prevents adding duplicate items", async () => {
       const user = userEvent.setup();
-      renderChoicesList({ items: ["Existing Item"] });
+      renderChoicesList({ choices: ["Existing Item"] });
 
       await user.type(getInputField(), "Existing Item");
       expect(getAddButton()).toBeDisabled();
@@ -176,7 +178,7 @@ describe("ChoicesList", () => {
       expect(getAddButton()).toBeDisabled();
       expect(
         screen.getByText(
-          `Item name too long (max ${MAX_CHOICE_LENGTH} characters)`
+          `Name is too long (max ${MAX_CHOICE_LENGTH} characters)`
         )
       ).toBeInTheDocument();
 
@@ -186,7 +188,7 @@ describe("ChoicesList", () => {
 
     it("handles case-sensitive duplicate detection", async () => {
       const user = userEvent.setup();
-      renderChoicesList({ items: ["Item"] });
+      renderChoicesList({ choices: ["Item"] });
 
       await user.type(getInputField(), "item"); // Different case
       expect(getAddButton()).toBeEnabled();
@@ -209,16 +211,16 @@ describe("ChoicesList", () => {
 
     it("prevents adding more than max allowed items", async () => {
       userEvent.setup();
-      const items = Array.from(
+      const choices = Array.from(
         { length: MAX_CHOICES_NUMBER },
         (_, i) => `Item ${i + 1}`
       );
-      renderChoicesList({ items });
+      renderChoicesList({ choices });
 
       expect(getInputField()).toBeDisabled();
       expect(getInputField()).toHaveAttribute(
         "placeholder",
-        "Maximum items reached"
+        "Maximum choices reached"
       );
       expect(getAddButton()).toBeDisabled();
     });
@@ -227,8 +229,8 @@ describe("ChoicesList", () => {
   describe("Removing items", () => {
     it("removes an item when clicking remove button", async () => {
       const user = userEvent.setup();
-      const items = ["Item 1", "Item 2"];
-      renderChoicesList({ items, defaultItem: "Item 1" });
+      const choices = ["Item 1", "Item 2"];
+      renderChoicesList({ choices, defaultChoice: "Item 1" });
 
       const removeButtons = getRemoveButtons();
       await user.click(removeButtons[0]);
@@ -238,8 +240,8 @@ describe("ChoicesList", () => {
 
     it("updates default item when removing the current default", async () => {
       const user = userEvent.setup();
-      const items = ["Item 1", "Item 2"];
-      renderChoicesList({ items, defaultItem: "Item 1" });
+      const choices = ["Item 1", "Item 2"];
+      renderChoicesList({ choices, defaultChoice: "Item 1" });
 
       const removeButtons = getRemoveButtons();
       await user.click(removeButtons[0]); // Remove "Item 1" (the default)
@@ -250,7 +252,7 @@ describe("ChoicesList", () => {
 
     it("clears default when removing the last item", async () => {
       const user = userEvent.setup();
-      renderChoicesList({ items: ["Only Item"], defaultItem: "Only Item" });
+      renderChoicesList({ choices: ["Only Item"], defaultChoice: "Only Item" });
 
       const removeButtons = getRemoveButtons();
       await user.click(removeButtons[0]);
@@ -263,8 +265,8 @@ describe("ChoicesList", () => {
   describe("Setting default item", () => {
     it("changes default item when selecting a different radio option", async () => {
       const user = userEvent.setup();
-      const items = ["Item 1", "Item 2"];
-      renderChoicesList({ items, defaultItem: "Item 1" });
+      const choices = ["Item 1", "Item 2"];
+      renderChoicesList({ choices, defaultChoice: "Item 1" });
 
       const radioButton = getRadioButtonByLabel("Item 2");
       await user.click(radioButton);
@@ -273,14 +275,20 @@ describe("ChoicesList", () => {
     });
 
     it("shows default badge on the current default item", () => {
-      renderChoicesList({ items: ["Item 1", "Item 2"], defaultItem: "Item 1" });
+      renderChoicesList({
+        choices: ["Item 1", "Item 2"],
+        defaultChoice: "Item 1",
+      });
 
       expect(screen.getByText("Default")).toBeInTheDocument();
       expect(getRadioButtonByLabel("Item 1")).toBeChecked();
     });
 
     it("does not show default badge on non-default items", () => {
-      renderChoicesList({ items: ["Item 1", "Item 2"], defaultItem: "Item 1" });
+      renderChoicesList({
+        choices: ["Item 1", "Item 2"],
+        defaultChoice: "Item 1",
+      });
 
       const defaultBadges = screen.getAllByText("Default");
       expect(defaultBadges).toHaveLength(1);
